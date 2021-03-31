@@ -80,11 +80,11 @@ DLLDEF_DEFINES="\
 " > "$outfile"
      # Besides replacing @...@, we also need to turn on dllimport
      # We also need to replace hash by hash_compare (annoying we hard-code :-( )
-     sed -e "s!@ac_windows_dllexport@!$DLLDEF_MACRO_NAME!g" \
-         -e "s!@ac_windows_dllexport_defines@!$DLLDEF_DEFINES!g" \
-         -e "s!@ac_cv_cxx_hash_map@!$HASH_MAP_H!g" \
-         -e "s!@ac_cv_cxx_hash_namespace@!$HASH_NAMESPACE!g" \
-         -e "s!@ac_cv_cxx_hash_set@!$HASH_SET_H!g" \
+     sed # -e "s!@ac_windows_dllexport@!$DLLDEF_MACRO_NAME!g" \
+         # -e "s!@ac_windows_dllexport_defines@!$DLLDEF_DEFINES!g" \
+         # -e "s!@ac_cv_cxx_hash_map@!$HASH_MAP_H!g" \
+         # -e "s!@ac_cv_cxx_hash_namespace@!$HASH_NAMESPACE!g" \
+         # -e "s!@ac_cv_cxx_hash_set@!$HASH_SET_H!g" \
          -e "s!@ac_cv_have_stdint_h@!0!g" \
          -e "s!@ac_cv_have_systypes_h@!0!g" \
          -e "s!@ac_cv_have_inttypes_h@!0!g" \
@@ -98,12 +98,12 @@ DLLDEF_DEFINES="\
          -e "s!@ac_cv___attribute___noreturn@!__declspec(noreturn)!g" \
          -e "s!@ac_cv___attribute___noinline@!!g" \
          -e "s!@ac_cv___attribute___printf_4_5@!!g" \
-         -e "s!@ac_google_attribute@!${HAVE___ATTRIBUTE__:-0}!g" \
+         # -e "s!@ac_google_attribute@!${HAVE___ATTRIBUTE__:-0}!g" \
          -e "s!@ac_google_end_namespace@!$_END_GOOGLE_NAMESPACE_!g" \
          -e "s!@ac_google_namespace@!$GOOGLE_NAMESPACE!g" \
          -e "s!@ac_google_start_namespace@!$_START_GOOGLE_NAMESPACE_!g" \
-         -e "s!@ac_htmlparser_namespace@!$HTMLPARSER_NAMESPACE!g" \
-         -e "s!\\bhash\\b!hash_compare!g" \
+         # -e "s!@ac_htmlparser_namespace@!$HTMLPARSER_NAMESPACE!g" \
+         # -e "s!\\bhash\\b!hash_compare!g" \
          "$file" >> "$outfile"
   done
 ) < "$1/windows/config.h"

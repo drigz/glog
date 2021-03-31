@@ -9,6 +9,28 @@
 #
 # Known issue: the namespace parameter is not supported on Win32.
 
+def expand_template_impl(ctx):
+    ctx.actions.expand_template(
+        template = ctx.file.template,
+        output = ctx.outputs.out,
+        substitutions = {
+            k: ctx.expand_location(v, ctx.attr.data)
+            for k, v in ctx.attr.substitutions.items()
+        },
+        is_executable = ctx.attr.is_executable,
+    )
+
+expand_template = rule(
+    implementation = expand_template_impl,
+    attrs = {
+        "template": attr.label(mandatory = True, allow_single_file = True),
+        "substitutions": attr.string_dict(mandatory = True),
+        "out": attr.output(mandatory = True),
+        "is_executable": attr.bool(default = False, mandatory = False),
+        "data": attr.label_list(allow_files = True),
+    },
+)
+
 def glog_library(namespace = "google", with_gflags = 1, **kwargs):
     if native.repository_name() != "@":
         repo_name = native.repository_name().lstrip("@")
@@ -198,16 +220,30 @@ EOF
     )
 
     [
-        native.genrule(
+        expand_template(
             name = "%s_h" % f,
-            srcs = [
-                "src/glog/%s.h.in" % f,
-            ],
-            outs = [
-                "src/glog/%s.h" % f,
-            ],
-            cmd = "$(location :gen_sh) < $< > $@",
-            tools = [":gen_sh"],
+            template = "src/glog/%s.h.in" % f,
+            out = "src/glog/%s.h" % f,
+            substitutions = {
+                "@ac_cv_cxx_using_operator@": "1",
+                "@ac_cv_have_unistd_h@": "1", # 0 for win
+                "@ac_cv_have_stdint_h@": "1", # 0 for win
+                "@ac_cv_have_systypes_h@": "1", # 0 for win
+                "@ac_cv_have_inttypes_h@": "0",
+                "@ac_cv_have_uint16_t@": "1", # 0 for win
+                "@ac_cv_have_u_int16_t@": "0", # 0 for win
+                "@ac_cv_have___uint16@": "0", # 1 for win
+                "@ac_cv_have___builtin_expect@": "1", # 0 for win
+                "@ac_cv_have_glog_export@": "0",
+                "@ac_cv_have_libgflags@": str(int(with_gflags)), # 0 for win
+                # "@ac_cv_have_.*@": "0",
+                "@ac_google_start_namespace@": "namespace google {",
+                "@ac_google_end_namespace@": "}",
+                "@ac_google_namespace@": "google",
+                "@ac_cv___attribute___noinline@": "__attribute__((noinline))", # "" for win
+                "@ac_cv___attribute___noreturn@": "__attribute__((noreturn))", # "__declspec(noreturn)" for win
+                "@ac_cv___attribute___printf_4_5@": "__attribute__((__format__(__printf__, 4, 5)))", # "" for win
+            },
         )
         for f in [
             "vlog_is_on",
